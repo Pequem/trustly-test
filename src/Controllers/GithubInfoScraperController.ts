@@ -19,8 +19,7 @@ class GithubInfoScraperController
     {
         try{
             if(req.body.url){
-                console.log("Receiver request")
-                console.log(req.body.url)
+                console.log((new Date()).toString()+" Receiver request: "+req.body.url)
 
                 let githubInfo = await this.githubScraperService.getRepoInfo(req.body.url)
 

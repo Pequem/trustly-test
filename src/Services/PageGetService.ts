@@ -17,14 +17,14 @@ class PageGetService implements IPageGetService
 
     public async getHtml(url: string): Promise<string>
     {
-        for(let i = 1; i < 4; i++){
+        for(let i = 1; i < 11; i++){
             try{
                 let result = await axios.get(this.checkIfExitsHttp(url) ? url : this.appendHttp(url))
                 return result.data
             }catch(e){
-                console.log('sleep')
-                console.log(2000 * i)
-                await new Promise(resolve => setTimeout(resolve, 2000 * i))
+                let sleepTime = 10000 * i
+                console.log('sleep: '+sleepTime)
+                await new Promise(resolve => setTimeout(resolve, sleepTime))
             }
         }
         throw new Error('Cannot get the page:'+url)
