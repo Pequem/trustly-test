@@ -4,7 +4,7 @@ import BaseRepository from './BaseRepository'
 import { injectable } from "inversify"
 
 @injectable()
-class GithubInfoRepository extends BaseRepository<IGithubInfoModel>
+class GithubInfoRepository extends BaseRepository<IGithubInfoModel|Promise<IGithubInfoModel>>
 {
 
 }

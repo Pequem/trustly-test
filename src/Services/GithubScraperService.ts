@@ -44,21 +44,14 @@ class GithubScraperService implements IGithubScraperService
     {
         let objects: IBaseObjectModel[] = await this.githubHtmlParse.getObjects(await this.pageGet.getHtml(this.parseGitUrl(url)))
         let files: IFileInfoModel[] = []
-        let promises: Promise<IBaseObjectModel[]>[] = []
 
-        objects.forEach((object: IBaseObjectModel) => {
+        for(let object of objects){
             if(object.isDirectory()){
-                promises.push(this.getAllFiles(object.getUrl()))
+                files = files.concat(await this.getAllFiles(object.getUrl()))
             }else{
                 files.push(<IFileInfoModel> object)
             }
-        })
-
-        let results = await Promise.all(promises)
-        
-        results.forEach(result => {
-            files = files.concat(<IFileInfoModel[]> result)
-        })
+        }
 
         return files
     }
@@ -102,20 +95,31 @@ class GithubScraperService implements IGithubScraperService
         return githubInfo;
     }
 
+    public async processGetRepoInfo(url: string): Promise<IGithubInfoModel>
+    {
+        let githubInfo: IGithubInfoModel = await this.fetchInfo(url)
+            
+        githubInfo = this.githubRepoStatisticsService.hydrate(githubInfo)
+
+        return githubInfo
+    }
+
     public async getRepoInfo(url: string): Promise<IGithubInfoModel>
     {
         url = url.trim()
-        let githubInfo: IGithubInfoModel|null = this.githubInfoRepository.get(url)
+        let githubInfo: IGithubInfoModel|Promise<IGithubInfoModel>|null = this.githubInfoRepository.get(url)
 
         if(githubInfo == null){
-            githubInfo = await this.fetchInfo(url)
-            
-            githubInfo = this.githubRepoStatisticsService.hydrate(githubInfo)
+            /*
+            I store the promise so if another request arrives before the current one finishes calculating,
+            both requests will use the same result and the API will not recalculate.
+            */
+            githubInfo = this.processGetRepoInfo(url)
             
             this.githubInfoRepository.store(url, githubInfo)
         }
 
-        return githubInfo
+        return await githubInfo
     }
 }
 

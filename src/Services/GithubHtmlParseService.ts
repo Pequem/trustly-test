@@ -5,6 +5,7 @@ import { injectable } from "inversify";
 import IBaseObjectModel from "../Interfaces/Models/IBaseObjectModel";
 import container from '../DIContainer'
 import IFileInfoModel from "../Interfaces/Models/IFileInfoModel";
+import { parse, HTMLElement } from 'node-html-parser'
 
 /*
 * I tried doing this with regex but gave up because i couldn't find the correct closing tag.
@@ -13,54 +14,54 @@ import IFileInfoModel from "../Interfaces/Models/IFileInfoModel";
 @injectable()
 class GithubHtmlParseService implements IGithubHtmlParse
 {
-    private extractDomItems(dom: jsdom.JSDOM)
+    private extractDomItems(dom: HTMLElement)
     {
-        return dom.window.document.querySelectorAll(
+        return dom.querySelectorAll(
             "div.Box-row.Box-row--focus-gray.py-2.d-flex.position-relative.js-navigation-item"
             )
     }
 
-    private isDirectory(node: Element): Boolean
+    private isDirectory(node: HTMLElement): Boolean
     {
         return node.querySelector('.octicon-file-directory') !== null
     }
 
-    private parseDirectory(node: Element): IDirectoryModel
+    private parseDirectory(node: HTMLElement): IDirectoryModel
     {
         let directory: IDirectoryModel = container.get<IDirectoryModel>('IDirectoryModel')
-        let aElement: HTMLLinkElement|null = node.querySelector(
+        let aElement: HTMLElement|null = node.querySelector(
             "div.flex-auto.min-width-0.col-md-2.mr-3 > span > a"
         )
         
         if(aElement){
             directory.setName(aElement.innerHTML.trim())
-            directory.setUrl(aElement.href)
+            directory.setUrl(<string> aElement.getAttribute('href'))
             return directory
         }
         throw new Error('Invalid directory dom')
     }
 
-    private parseFile(node: Element): IFileInfoModel
+    private parseFile(node: HTMLElement): IFileInfoModel
     {
         let fileInfo: IFileInfoModel = container.get<IFileInfoModel>('IFileInfoModel')
-        let aElement: HTMLLinkElement|null = node.querySelector(
+        let aElement: HTMLElement|null = node.querySelector(
             "div.flex-auto.min-width-0.col-md-2.mr-3 > span > a"
         )
 
         if(aElement){
             fileInfo.setName(aElement.innerHTML.trim())
-            fileInfo.setUrl(aElement.href)
+            fileInfo.setUrl(<string> aElement.getAttribute('href'))
             return fileInfo
         }
         throw new Error('invalid file dom')
 
     }
 
-    private parseDomItems(nodes:  NodeListOf<Element>): IBaseObjectModel[]
+    private parseDomItems(nodes:  HTMLElement[]): IBaseObjectModel[]
     {
         let objects: IBaseObjectModel[] = []
         
-        nodes.forEach((node: Element) => {
+        nodes.forEach((node: HTMLElement) => {
             if(this.isDirectory(node)){
                 objects.push(this.parseDirectory(node))
             }else{
@@ -73,7 +74,7 @@ class GithubHtmlParseService implements IGithubHtmlParse
 
     private async parserHtml(html: string)
     {
-        return new jsdom.JSDOM(html)
+        return parse(html)
     }
     
     public async getObjects(html: string): Promise<IBaseObjectModel[]>
@@ -84,9 +85,9 @@ class GithubHtmlParseService implements IGithubHtmlParse
 
     }
 
-    private getFileInfo(dom: jsdom.JSDOM): string
+    private getFileInfo(dom: HTMLElement): string
     {
-        let element: HTMLDivElement = <HTMLDivElement> dom.window.document.querySelector("div.text-mono.f6.flex-auto.pr-3.flex-order-2.flex-md-order-1")
+        let element: HTMLElement = dom.querySelector("div.text-mono.f6.flex-auto.pr-3.flex-order-2.flex-md-order-1")
         
         if(element){
             return element.innerHTML
@@ -136,7 +137,7 @@ class GithubHtmlParseService implements IGithubHtmlParse
 
     public async hydrateFile(file: IFileInfoModel, html: string): Promise<IFileInfoModel>
     {
-        let dom: jsdom.JSDOM = await this.parserHtml(html)
+        let dom: HTMLElement = await this.parserHtml(html)
         let infos = this.parserFileInfoText(this.getFileInfo(dom))
 
         file.setBytes(infos.bytes)
