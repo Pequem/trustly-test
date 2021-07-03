@@ -10,4 +10,4 @@ RUN npm run build
 
 EXPOSE $PORT
 
-CMD npm start
+ENTRYPOINT ["npm", "start"]

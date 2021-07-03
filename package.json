@@ -4,8 +4,8 @@
   "description": "This api count the number of files in a github repo and the size of this files",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "build": "tsc -b --verbose",
+    "start": "node dist/src/index.js",
     "test": "jest",
     "dev": "ts-node-dev --inspect=0.0.0.0:7002 --exit-child --respawn src/index.ts"
   },
