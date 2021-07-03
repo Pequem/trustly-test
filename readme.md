@@ -5,6 +5,12 @@
 - Run 'npm install'
 - Run 'npm start'
 
+## Or Docker image
+
+```
+docker run -p 80:3000 pequem/trustly-test
+```
+
 ## Usage
 
 ### POST /
@@ -47,3 +53,6 @@ curl --location --request POST 'localhost' \
 }'
 ```
 
+## Issues
+
+If you receive a "Cannot get the page" error, it is because Github block VM IP temporary.
