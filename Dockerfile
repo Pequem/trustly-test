@@ -8,6 +8,6 @@ RUN npm install
 
 RUN npm run build
 
-EXPOSE 80
+EXPOSE $PORT
 
 CMD npm start
