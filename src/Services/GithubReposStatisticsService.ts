@@ -8,6 +8,7 @@ import { injectable } from "inversify";
 class GithubRepoStatisticsService implements IGithubRepoStatisticsService
 {
 
+    // Get all unique extensions in array
     private getExtensions(infos: IGithubInfoModel): string[]
     {
         let ext: string[] = []

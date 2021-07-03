@@ -1,5 +1,5 @@
 build:
   docker:
-    web: Dockerfile
+    web: DockerfileHeroku
 run:
   web: npm start

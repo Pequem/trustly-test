@@ -56,3 +56,5 @@ curl --location --request POST 'localhost' \
 ## Issues
 
 If you receive a "Cannot get the page" error, it is because Github block VM IP temporary.
+
+I couldn't make parallel calls to github because it blocks the request, so the app takes a while to search a specific repository the first time.

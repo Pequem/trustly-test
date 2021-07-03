@@ -73,6 +73,7 @@ class GithubScraperService implements IGithubScraperService
         return file
     }
 
+    // This function hydrated all files asynchronously, performing a Promise.all at the end, however this causes github blocking
     private async hydrateFiles(files: IFileInfoModel[]): Promise<IFileInfoModel[]>
     {
         let hydratedFiles: IFileInfoModel[] = []

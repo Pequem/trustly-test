@@ -14,7 +14,8 @@ import { parse, HTMLElement } from 'node-html-parser'
 @injectable()
 class GithubHtmlParseService implements IGithubHtmlParse
 {
-    private extractDomItems(dom: HTMLElement)
+    // Get list of files and directories from github html
+    private extractDomItems(dom: HTMLElement): HTMLElement[]
     {
         return dom.querySelectorAll(
             "div.Box-row.Box-row--focus-gray.py-2.d-flex.position-relative.js-navigation-item"
@@ -26,6 +27,7 @@ class GithubHtmlParseService implements IGithubHtmlParse
         return node.querySelector('.octicon-file-directory') !== null
     }
 
+    // interpret a directory html block
     private parseDirectory(node: HTMLElement): IDirectoryModel
     {
         let directory: IDirectoryModel = container.get<IDirectoryModel>('IDirectoryModel')
@@ -41,6 +43,7 @@ class GithubHtmlParseService implements IGithubHtmlParse
         throw new Error('Invalid directory dom')
     }
 
+    //interpret a file html block
     private parseFile(node: HTMLElement): IFileInfoModel
     {
         let fileInfo: IFileInfoModel = container.get<IFileInfoModel>('IFileInfoModel')
@@ -72,19 +75,21 @@ class GithubHtmlParseService implements IGithubHtmlParse
         return objects
     }
 
-    private async parserHtml(html: string)
+    private async parserHtml(html: string): Promise<HTMLElement>
     {
         return parse(html)
     }
     
+    // Get parsed objects from a Github html
     public async getObjects(html: string): Promise<IBaseObjectModel[]>
     {
-        let dom = await this.parserHtml(html)
+        let dom: HTMLElement = await this.parserHtml(html)
 
         return this.parseDomItems(this.extractDomItems(dom))
 
     }
 
+    // Get html block that has bytes and lines info
     private getFileInfo(dom: HTMLElement): string
     {
         let element: HTMLElement = dom.querySelector("div.text-mono.f6.flex-auto.pr-3.flex-order-2.flex-md-order-1")
@@ -95,6 +100,7 @@ class GithubHtmlParseService implements IGithubHtmlParse
         throw new Error('Element not found')
     }
 
+    // Normalize units
     private convertMeasureToByte(value: number, measure: string): number
     {
         switch(measure.toLowerCase()) {
@@ -107,17 +113,19 @@ class GithubHtmlParseService implements IGithubHtmlParse
         }
     }
 
+    // Check if contains number of lines in a string
     private hasLinesInfo(text: string): boolean
     {
         return text.indexOf('line') != -1
     }
 
-    private parserFileInfoText(text: string)
+    private parserFileInfoText(text: string): {lines: number, bytes: number}
     {
         let pieces: string[] = text.split('<span class="file-info-divider"></span>')
         let linePieces: string[] = []
         let sizePieces: string[] = []
 
+        // If the string does not contains line infos, is because the file is binary and only have size information
         if(this.hasLinesInfo(text)){
             linePieces = pieces[0].trim().split(' ')
             sizePieces = pieces[1].trim().split(' ')
