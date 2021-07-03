@@ -119,7 +119,12 @@ class GithubScraperService implements IGithubScraperService
             this.githubInfoRepository.store(url, githubInfo)
         }
 
-        return await githubInfo
+        try{
+            return await githubInfo
+        }catch(e){
+            this.githubInfoRepository.delete(url)
+            throw e
+        }
     }
 }
 
