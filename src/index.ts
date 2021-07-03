@@ -9,7 +9,8 @@ import 'reflect-metadata'
 
     app.use(routes)
     
-    app.listen(80, function(){
+    app.listen(process.env.PORT || 80, function(){
+        console.log(process.env.PORT || 80)
         console.log('API Ready')
     })
 })()
